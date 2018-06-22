@@ -1,46 +1,92 @@
 <?php
-//---------------------------------Consulta Agenda---------------------------------  
-$results = '';
-$results2 = '';
-$results3 = '';
-$results4 = '';
-$results5 = '';
-$pdo = new PDO("sqlsrv:Server=172.26.11.13,49188;Database=InventarioAF", "sa", "Monte01!");
-$statement = $pdo->prepare("SELECT * FROM [dbo].[SUBTIPOACTIVOFIJO]");
-$statement->execute();
-if (!$statement) {
+$serverName = "172.26.11.13,49188";
+$connectionOptions = array(
+    "Database" => "InventarioAF",
+    "UID" => "sa",
+    "PWD" => "Monte01!"
+);
+$arr = array();
+$conn = sqlsrv_connect($serverName, $connectionOptions);
+if ($conn) {
+    $tsql = "SELECT * FROM [dbo].[SUBTIPOACTIVOFIJO]";
 
-} else {
-    $results = $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
-$statement2 = $pdo->prepare("SELECT * FROM [dbo].[MARCA]");
-$statement2->execute();
-if (!$statement2) {
+    $getResults = sqlsrv_query($conn, $tsql);
+    if ($getResults == false) {
+        die(FormatErrors(sqlsrv_errors()));
+    } else {
+        while ($row = sqlsrv_fetch_array($getResults, SQLSRV_FETCH_ASSOC)) {
 
-} else {
-    $results2 = $statement2->fetchAll(PDO::FETCH_ASSOC);
-    }
-$statement3 = $pdo->prepare("SELECT * FROM [dbo].[MODELO]");
-$statement3->execute();
-if (!$statement3) {
+            array_push($arr, $row);
 
-} else {
-    $results3 = $statement3->fetchAll(PDO::FETCH_ASSOC);
+        }
+        sqlsrv_free_stmt($getResults);
     }
-$statement4 = $pdo->prepare("SELECT * FROM [dbo].[SISTEMAOPERATIVO]");
-$statement4->execute();
-if (!$statement4) {
 
-} else {
-    $results4 = $statement4->fetchAll(PDO::FETCH_ASSOC);
-    }
-$statement5 = $pdo->prepare("SELECT * FROM [dbo].[DISCO]");
-$statement5->execute();
-if (!$statement5) {
+}
+if ($conn) {
+    $tsql = "SELECT * FROM [dbo].[MARCA]";
 
-} else {
-    $results5 = $statement5->fetchAll(PDO::FETCH_ASSOC);
-    $resultado =array_merge($results,$results2,$results3,$results4,$results5);
-    echo json_encode($resultado, JSON_UNESCAPED_UNICODE);
+    $getResults = sqlsrv_query($conn, $tsql);
+    if ($getResults == false) {
+        die(FormatErrors(sqlsrv_errors()));
+    } else {
+        while ($row = sqlsrv_fetch_array($getResults, SQLSRV_FETCH_ASSOC)) {
+
+            array_push($arr, $row);
+
+        }
+        sqlsrv_free_stmt($getResults);
     }
+
+}
+if ($conn) {
+    $tsql = "SELECT * FROM [dbo].[MODELO]";
+
+    $getResults = sqlsrv_query($conn, $tsql);
+    if ($getResults == false) {
+        die(FormatErrors(sqlsrv_errors()));
+    } else {
+        while ($row = sqlsrv_fetch_array($getResults, SQLSRV_FETCH_ASSOC)) {
+
+            array_push($arr, $row);
+
+        }
+        sqlsrv_free_stmt($getResults);
+    }
+
+}
+if ($conn) {
+    $tsql = "SELECT * FROM [dbo].[SISTEMAOPERATIVO]";
+
+    $getResults = sqlsrv_query($conn, $tsql);
+    if ($getResults == false) {
+        die(FormatErrors(sqlsrv_errors()));
+    } else {
+        while ($row = sqlsrv_fetch_array($getResults, SQLSRV_FETCH_ASSOC)) {
+
+            array_push($arr, $row);
+
+        }
+        sqlsrv_free_stmt($getResults);
+    }
+
+}
+if ($conn) {
+    $tsql = "SELECT * FROM [dbo].[DISCO]";
+
+    $getResults = sqlsrv_query($conn, $tsql);
+    if ($getResults == false) {
+        die(FormatErrors(sqlsrv_errors()));
+    } else {
+        while ($row = sqlsrv_fetch_array($getResults, SQLSRV_FETCH_ASSOC)) {
+
+            array_push($arr, $row);
+
+        }
+        sqlsrv_free_stmt($getResults);
+    }
+    echo json_encode($arr, JSON_UNESCAPED_UNICODE);
+}
+
+
 ?>

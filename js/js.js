@@ -104,7 +104,7 @@ function startScanner() {
         console.log("Barcode detected and processed : [" + result.codeResult.code + "]", result);
         document.getElementById('imprime').innerHTML = result.codeResult.code;
         var codigo = result.codeResult.code;
-        codigo = parseInt(codigo.substring(6, 13));
+        
         activofijos(codigo)
     });
 }
@@ -119,13 +119,14 @@ document.getElementById("btn").addEventListener("click", function () {
 
 
 var ArAF = [];
-var m = '36705';
+var m = '';
 var resultadoFinal = '';
-activofijos(m)
+//activofijos(m)
 
 function activofijos(codigo) {
+m = codigo;
     var datos = {
-        datos: codigo
+        datos: codigo.toString()
     };
 
     $.ajax({
@@ -165,6 +166,24 @@ var selMemoria = document.getElementById('selMemoria');
 var selNumserie = document.getElementById('selNumserie');
 
 function rellenar(dato) {
+    $("html, body").animate({
+        scrollTop: 790
+    }, 500);
+    
+    Activofijo.innerHTML = '';
+    Sociedad.innerHTML =  '';
+    Departamento.innerHTML = '';
+    Ejercicio.innerHTML = '';
+    TipoAF.innerHTML = '';
+    selDescripcion.value = '';
+    selMemoria.value = '';
+    selNumserie.value = '';
+    $("#selSubtipoAf").empty()
+    $("#selMarca").empty()
+    $("#selModelo").empty()
+    $("#selSO").empty()
+    $("#selDisco1").empty()
+    $("#selDisco2").empty()
 
     Activofijo.innerHTML = dato.ACTIVOFIJO;
     Sociedad.innerHTML = dato.NOMBRESOCIEDAD;
@@ -193,7 +212,7 @@ function rellenar(dato) {
     }
 
     for (let i = 0; i < ArMarca.length; i++) {
-        if (ArMarca[i].MARCA == dato.MARCA) {
+        if (ArMarca[i].MARCA == dato.MARCA && dato.Marca != null) {
             var option = document.createElement("option");
             option.text = ArMarca[i].MARCA;
             option.setAttribute('value', ArMarca[i].MARCA)
@@ -206,6 +225,9 @@ function rellenar(dato) {
             selMarca.add(option);
         }
     }
+
+
+
 
     selMarca.addEventListener('change', function () {
         selModelo.innerHTML = '';
@@ -222,7 +244,7 @@ function rellenar(dato) {
     });
 
     for (let i = 0; i < ArSO.length; i++) {
-        if (ArSO[i].SISTEMAOPERATIVO == dato.SISTEMAOPERATIVO) {
+        if (ArSO[i].SISTEMAOPERATIVO == dato.SISTEMAOPERATIVO && dato.SISTEMAOPERATIVO != null) {
             var option = document.createElement("option");
             option.text = ArSO[i].SISTEMAOPERATIVO;
             option.setAttribute('value', ArSO[i].SISTEMAOPERATIVO)
@@ -237,7 +259,7 @@ function rellenar(dato) {
     }
 
     for (let i = 0; i < ArDisco.length; i++) {
-        if (ArDisco[i].TIPO + ' ' + ArDisco[i].CAPACIDAD == dato.DISCO1) {
+        if (ArDisco[i].TIPO + ' ' + ArDisco[i].CAPACIDAD == dato.DISCO1 && dato.DISCO1 != null) {
             var option = document.createElement("option");
             option.text = ArDisco[i].TIPO + ' ' + ArDisco[i].CAPACIDAD;
             option.setAttribute('value', ArDisco[i].TIPO + ' ' + ArDisco[i].CAPACIDAD)
@@ -254,7 +276,7 @@ function rellenar(dato) {
     }
 
     for (let i = 0; i < ArDisco.length; i++) {
-        if (ArDisco[i].TIPO + ' ' + ArDisco[i].CAPACIDAD == dato.DISCO2) {
+        if (ArDisco[i].TIPO + ' ' + ArDisco[i].CAPACIDAD == dato.DISCO2 && dato.DISCO2 != null) {
             var option = document.createElement("option");
             option.text = ArDisco[i].TIPO + ' ' + ArDisco[i].CAPACIDAD;
             option.setAttribute('value', ArDisco[i].TIPO + ' ' + ArDisco[i].CAPACIDAD)
@@ -278,7 +300,41 @@ function rellenar(dato) {
         }
     }
 
-
+if(dato.SISTEMAOPERATIVO == null){
+var option = document.createElement("option");
+            option.text = '--SO--'
+            option.setAttribute('value', '')
+            option.selected = true;
+            selSO.add(option);
+}
+if(dato.DISCO1 == null){
+var option = document.createElement("option");
+            option.text = '--DISCO1--'
+            option.setAttribute('value', '')
+            option.selected = true;
+            selDisco1.add(option);
+}
+if(dato.DISCO2 == null){
+var option = document.createElement("option");
+            option.text = '--DISCO2--'
+            option.setAttribute('value', '')
+            option.selected = true;
+            selDisco2.add(option);
+}
+if(dato.MARCA == null){
+var option = document.createElement("option");
+            option.text = '--Marca--'
+            option.setAttribute('value', '')
+            option.selected = true;
+            selMarca.add(option);
+}
+if(dato.MARCA == null){
+var option = document.createElement("option");
+            option.text = '--Modelo--'
+            option.setAttribute('value', '')
+            option.selected = true;
+            selModelo.add(option);
+}
 
 }
 
