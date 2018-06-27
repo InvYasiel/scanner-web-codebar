@@ -7,7 +7,12 @@ var ArDisco = [];
 datosAR();
 
 function datosAR() {
-    
+    ArDisco = [];
+ArSO = [];
+ArModelo = [];
+ArMarca = [];
+Arsubtipo = [];
+ArDatos = [];
     if (window.XMLHttpRequest) {
         xmlhttp = new XMLHttpRequest();
     } else {

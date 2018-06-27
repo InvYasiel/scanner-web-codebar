@@ -1,31 +1,7 @@
 var Activarscaner = true;
 var codigo = '';
-navigator.getMedia = (navigator.getUserMedia ||
-    navigator.webkitGetUserMedia ||
-    navigator.mozGetUserMedia);
 
-navigator.getMedia(
-
-    // Restricciones (contraints) *Requerido
-    {
-        video: true,
-        audio: true
-    },
-    // Funcion de finalizacion (Succes-Callback) *Requerido
-    function (localMediaStream) {
-        var video = document.querySelector('video');
-        video.src = window.URL.createObjectURL(localMediaStream);
-        video.onloadedmetadata = function (e) {
-            // Haz algo con el video aquí.
-        };
-    },
-    // errorCallback *Opcional
-    function (err) {
-        console.log("Ocurrió el siguiente error: " + err);
-    }
-
-);
-
+startScanner();
 var _scannerIsRunning = false;
 
 function startScanner() {
@@ -34,21 +10,8 @@ function startScanner() {
                 name: "Live",
                 type: "LiveStream",
                 // Or '#yourElement' (optional)
-                target: document.querySelector('#scanner-container'),
-                constraints: {
-                    width: 700,
-                    height: 200,
-                    facingMode: "environment"
-                },
-                area: { // defines rectangle of the detection/localization area
-                    top: "0%", // top offset
-                    right: "0%", // right offset
-                    left: "0%", // left offset
-                    bottom: "0%" // bottom offset
-                },
-                singleChannel: false // true: only the red color-channel is read
-
-            },
+                target: document.querySelector('#scanner-container')},
+                
             decoder: {
                 readers: ["code_128_reader"]
             }
@@ -102,38 +65,46 @@ function startScanner() {
         }
     });
     Quagga.onDetected(function (result) {
-if(rellenarTT){
-var tt= result.codeResult.code
-selPadre.innerHTML = parseInt(tt.substring(6,13)).toString();
-selhab.innerHTML = parseInt(tt.substring(6,13)).toString();
-on.style = 'display:none;'
-}
-        if(Activarscaner){
-Activarscaner= false;
-on.style = 'display:none;'
-console.log("Barcode detected and processed : [" + result.codeResult.code + "]", result);
-        document.getElementById('imprime').innerHTML = result.codeResult.code;
-        var codigo = result.codeResult.code;
+        if (rellenarTT) {
+rellenarTT = false;
+            var tt = result.codeResult.code
+            selPadre.innerHTML = parseInt(tt.substring(6, 13)).toString();
+            selhab.innerHTML = parseInt(tt.substring(6, 13)).toString();
+            on.style = 'display:none;'
+activofijos(codigo);
+        }
+        if (Activarscaner) {
+            Activarscaner = false;
+            on.style = 'display:none;'
+            console.log("Barcode detected and processed : [" + result.codeResult.code + "]", result);
+            document.getElementById('imprime').innerHTML = result.codeResult.code;
+            var codigo = result.codeResult.code;
 
-        activofijos(codigo)
+            activofijos(codigo)
+        }
+if(!rellenarTT || !Activarscaner){
+on.style = 'display:none;'
+            console.log("Barcode detected and processed : [" + result.codeResult.code + "]", result);
+            document.getElementById('imprime').innerHTML = result.codeResult.code;
+            var codigo = result.codeResult.code;
+activofijos(codigo)
 }
-        
     });
 }
-startScanner();
+
 var on = document.getElementById('scanner-container');
 // Start/stop scanner
 document.getElementById("btn").addEventListener("click", function () {
     Activarscaner = true;
-on.style ='display:block;'
-$("html, body").animate({
+    on.style = 'display:block;'
+    $("html, body").animate({
         scrollTop: 0
     }, 500);
 }, false);
 
 
 var ArAF = [];
-//var m = 'S01P180036724';
+//var m = 'S01P180000006';
 var resultadoFinal = '';
 //activofijos(m);
 
@@ -199,10 +170,12 @@ function rellenar(dato) {
     selDescripcion.value = '';
     selMemoria.value = '';
     selNumserie.value = '';
-    selPadre.innerHTML = '';
-    selhab.value  = '';
+    selPadre.innerHTML = 'Click!';
+    selhab.innerHTML = 'Click!';
     selDescripcionPadre.value = '';
-    usuarioElegido.value ='';
+    usuarioElegido.value = '';
+    //contPuesto.innerHTML = '';
+    //contHabitacion.innerHTML = '';
 
     $("#selSubtipoAf").empty()
     $("#selMarca").empty()
@@ -218,11 +191,28 @@ function rellenar(dato) {
     TipoAF.innerHTML = dato.NOMBRETIPOAF;
     selDescripcionPadre.value = dato.DESCRIPCIONS;
     if (dato.LETRAEAN == 'L') {
-conMostrar.style= 'display:none';
-        buscarPadre(dato);
+
+selDescripcionPadre.value = dato.DESCRIPCIONS;
+document.getElementById('divUsuario').style = 'display:block;'
+        conMostrar.style = 'display:none';
+contHabitacion.style = 'display:none';
+if(dato.PADRE == ''  || dato.PADRE == null){
+selhab.innerHTML = 'Click!';
+}else{
+selhab.innerHTML = dato.PADRE;
+}
+        
+contPuesto.style = 'display:block';
+        document.getElementById('infoPadre').style = 'display:block;'
+buscarPadre(dato);
     }
     if (dato.LETRAEAN == 'H') {
-conMostrar.style= 'display:none';
+contHabitacion.style = 'display:block';
+document.getElementById('divUsuario').style = 'display:none;'
+selDescripcionPadre.value = dato.DESCRIPCIONS;
+        conMostrar.style = 'display:none';
+contPuesto.style = 'display:none';
+        document.getElementById('infoPadre').style = 'display:block;'
         buscarHab(dato)
     }
     if (dato.LETRAEAN != 'L' && dato.LETRAEAN != 'H') {
@@ -230,7 +220,13 @@ conMostrar.style= 'display:none';
         selDescripcion.value = dato.DESCRIPCIONS;
         selMemoria.value = dato.MEMORIA;
         selNumserie.value = dato.NUMSERIE;
-        selPadre.innerHTML = dato.PADRE;
+        if (dato.PADRE == dato.ACTIVOFIJO || dato.PADRE == "" || !dato.PADRE) {
+            selPadre.innerHTML = 'Asignarle puesto';
+        } else {
+
+            selPadre.innerHTML = dato.PADRE;
+        }
+        document.getElementById('infoPadre').style = 'display:none;'
 
         for (let i = 0; i < Arsubtipo.length; i++) {
             if (parseInt(Arsubtipo[i].TIPOAF) == parseInt(dato.TIPOAF)) {
@@ -250,7 +246,7 @@ conMostrar.style= 'display:none';
         }
 
         for (let i = 0; i < ArMarca.length; i++) {
-            if (ArMarca[i].MARCA == dato.MARCA && dato.Marca != null) {
+            if (ArMarca[i].MARCA == dato.MARCA && dato.MARCA != null) {
                 var option = document.createElement("option");
                 option.text = ArMarca[i].MARCA;
                 option.setAttribute('value', ArMarca[i].MARCA)
@@ -339,35 +335,35 @@ conMostrar.style= 'display:none';
         }
 
 
-        if (dato.SISTEMAOPERATIVO == null) {
+        if (dato.SISTEMAOPERATIVO == null || dato.SISTEMAOPERATIVO == '') {
             var option = document.createElement("option");
             option.text = '--SO--'
             option.setAttribute('value', '')
             option.selected = true;
             selSO.add(option);
         }
-        if (dato.DISCO1 == null) {
+        if (dato.DISCO1 == null || dato.DISCO1 == '') {
             var option = document.createElement("option");
             option.text = '--DISCO1--'
             option.setAttribute('value', '')
             option.selected = true;
             selDisco1.add(option);
         }
-        if (dato.DISCO2 == null) {
+        if (dato.DISCO2 == null  || dato.DISCO2 == '') {
             var option = document.createElement("option");
             option.text = '--DISCO2--'
             option.setAttribute('value', '')
             option.selected = true;
             selDisco2.add(option);
         }
-        if (dato.MARCA == null) {
+        if (dato.MARCA == null || dato.MARCA == '') {
             var option = document.createElement("option");
             option.text = '--Marca--'
             option.setAttribute('value', '')
             option.selected = true;
             selMarca.add(option);
         }
-        if (dato.MARCA == null) {
+        if (dato.MARCA == null || dato.MARCA == '') {
             var option = document.createElement("option");
             option.text = '--Modelo--'
             option.setAttribute('value', '')
@@ -392,7 +388,7 @@ function guardar() {
         selDescripcion: selDescripcion.value,
         selMemoria: selMemoria.value,
         selNumserie: selNumserie.value,
-selPadre: selPadre.textContent
+        selPadre: selPadre.textContent
     }
     $.ajax({
         type: "POST",
@@ -402,18 +398,34 @@ selPadre: selPadre.textContent
         asycn: true,
         success: function (result) {
 
-        }
-    });
+            swal({
+                title: "GUARDADO CORRECTAMENTE ",
+                text: 'Los datos se han actualizado',
+                icon: "success",
+                button: "Cerrar",
+            }).then(function (value) {
+                datosAR()
+            });
 
 }
+});
+}
+
 
 var infoPadre = [];
 btn_guardar = document.getElementById('btn_guardar')
+
 function buscarPadre(padre) {
+infoPadre = [];
     document.getElementById('divUsuario').style = 'display:block';
     document.getElementById('dvDescripcionPadre').style = 'display:block';
-    document.getElementById('dvhab').style ='display:block';
-    selhab.value = padre.PADRE;
+    document.getElementById('dvhab').style = 'display:block';
+if(padre.PADRE == '' || padre.PADRE == null){
+selhab.innerHTML = 'Click!';
+}else{
+selhab.innerHTML = padre.PADRE;
+}
+    
     selDescripcionPadre.value = padre.DESCRIPCIONS;
     usuarioElegido.value = padre.USUARIO;
     var infoParaEnviar = {
@@ -459,6 +471,7 @@ function rellenarPadre() {
 
 
     }
+infoPadre = [];
 
 }
 
@@ -476,6 +489,13 @@ function mostrarInfo(e) {
 var infoHab = []
 
 function buscarHab(padre) {
+document.getElementById('divUsuario').style = 'display:none';
+    document.getElementById('dvhab').style = 'display:none';
+
+infoHab = []
+    selhab.innerHTML = 'Click me!';
+    
+    usuarioElegido.value = '';
     var infoParaEnviar = {
         padre: padre.ACTIVOFIJO
     }
@@ -498,15 +518,16 @@ var n = 0;
 var material = []
 
 function selecinfo() {
-if(infoHab.length == 0){
-var infoParaEnviar = {
-        padre: ''
+material = []
+    if (infoHab.length == 0) {
+        var infoParaEnviar = {
+            padre: ''
+        }
+    } else {
+        var infoParaEnviar = {
+            padre: infoHab[n].ACTIVOFIJO
+        }
     }
-}else{
-    var infoParaEnviar = {
-        padre: infoHab[n].ACTIVOFIJO
-    }
-}
     $.ajax({
         type: "POST",
         url: "php/infopadre.php",
@@ -522,7 +543,7 @@ var infoParaEnviar = {
             if (n < infoHab.length) {
                 selecinfo();
             } else {
-btn_guardar.setAttribute('onclick', 'guardarPadreHab()');
+                btn_guardar.setAttribute('onclick', 'guardarPadreHab()');
                 rellenarhab();
             }
 
@@ -531,8 +552,9 @@ btn_guardar.setAttribute('onclick', 'guardarPadreHab()');
 }
 
 function rellenarhab() {
-    contPuesto.style = 'display:block';
-document.getElementById('dvDescripcionPadre').style = 'display:block';
+
+    contHabitacion.style = 'display:block';
+    document.getElementById('dvDescripcionPadre').style = 'display:block';
     for (let i = 0; i < infoHab.length; i++) {
         var ico = document.createElement('i');
         ico.setAttribute('class', 'fas fa-chevron-circle-down');
@@ -540,32 +562,35 @@ document.getElementById('dvDescripcionPadre').style = 'display:block';
         b.setAttribute('onclick', 'mostrarInfo(info' + i + ')')
         b.appendChild(ico);
         b.innerHTML += ' ' + infoHab[i].DESCRIPCION + '</br>';
-        
+
         var dv = document.createElement('div');
-        dv.setAttribute('id', 'info'+i);
-        dv.style ='display:none;'
+        dv.setAttribute('id', 'info' + i);
+        dv.style = 'display:none;'
         for (let j = 0; j < material.length; j++) {
-            if (infoHab[i].ACTIVOFIJO == material[j].PADRE) { 
+            if (infoHab[i].ACTIVOFIJO == material[j].PADRE) {
                 var p = document.createElement('p');
-                p.innerHTML =  material[j].DESCRIPCION +'</br>';
+                p.innerHTML = material[j].DESCRIPCION + '</br>';
                 dv.appendChild(p)
             }
         }
         b.appendChild(dv);
-        contPuesto.appendChild(b);
+        contHabitacion.appendChild(b);
 
 
     }
 }
 var usuarioElegido = document.getElementById('usuarioElegido');
 var selDescripcionPadre = document.getElementById('selDescripcionPadre');
-function guardarPadre(){
 
+function guardarPadre() {
+if(selhab.textContent == "Click!"){
+selhab.textContent = '';
+}
     var infoParaEnviar = {
         Activofijo: m,
         usuarioElegido: usuarioElegido.value,
         selDescripcionPadre: selDescripcionPadre.value,
-        selhab :selhab.textContent 
+        selhab: selhab.textContent
     }
     $.ajax({
         type: "POST",
@@ -574,12 +599,20 @@ function guardarPadre(){
         dataType: "text",
         asycn: true,
         success: function (result) {
-
+            swal({
+                title: "GUARDADO CORRECTAMENTE ",
+                text: 'Los datos se han actualizado',
+                icon: "success",
+                button: "Cerrar",
+            }).then(function (value) {
+                activofijos(m);
+            });
         }
     });
-    
+
 }
-function guardarPadreHab(){
+
+function guardarPadreHab() {
     var infoParaEnviar = {
         Activofijo: m,
         selDescripcionPadre: selDescripcionPadre.value
@@ -591,26 +624,33 @@ function guardarPadreHab(){
         dataType: "text",
         asycn: true,
         success: function (result) {
-
+            swal({
+                title: "GUARDADO CORRECTAMENTE ",
+                text: 'Los datos se han actualizado',
+                icon: "success",
+                button: "Cerrar",
+            }).then(function (value) {
+activofijos(m);
+                //location.reload();
+            });
         }
     });
 }
 
 var rellenarTT = false;
-document.getElementById("selPadre").addEventListener("click",function(){
-on.style ='display:block;'
-rellenarTT = true;
-$("html, body").animate({
+document.getElementById("selPadre").addEventListener("click", function () {
+    on.style = 'display:block;'
+    rellenarTT = true;
+    $("html, body").animate({
         scrollTop: 0
     }, 500);
 
-},false);
-document.getElementById("selhab").addEventListener("click",function(){
-on.style ='display:block;'
-rellenarTT = true;
-$("html, body").animate({
+}, false);
+document.getElementById("selhab").addEventListener("click", function () {
+    on.style = 'display:block;'
+    rellenarTT = true;
+    $("html, body").animate({
         scrollTop: 0
     }, 500);
 
-},false);
-
+}, false);
